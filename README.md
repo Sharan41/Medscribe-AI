@@ -475,6 +475,22 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [FastAPI](https://fastapi.tiangolo.com/) - For the amazing Python framework
 - [React](https://reactjs.org/) - For the UI framework
 
+## 🚀 Deployment
+
+### Deploy to Render
+
+See [RENDER_DEPLOYMENT.md](./RENDER_DEPLOYMENT.md) for complete deployment instructions.
+
+**Quick Steps:**
+1. Push code to GitHub
+2. Connect repository to Render
+3. Deploy backend as Web Service
+4. Deploy frontend as Static Site
+5. Configure environment variables
+6. Test deployment
+
+For detailed instructions, see [RENDER_DEPLOYMENT.md](./RENDER_DEPLOYMENT.md).
+
 ## 📞 Support
 
 For issues, questions, or contributions:
