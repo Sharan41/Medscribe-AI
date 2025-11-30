@@ -1,0 +1,39 @@
+# MedScribe AI Backend Dependencies
+
+# FastAPI & Server
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+
+# Database & Auth
+supabase==2.0.0
+python-dotenv==1.0.0
+
+# Data Validation
+pydantic==2.5.0
+pydantic-settings==2.1.0
+email-validator>=2.0.0
+
+# External APIs
+groq==0.4.0
+google-generativeai>=0.3.0
+assemblyai>=0.28.0
+reverie-sdk==0.0.4
+httpx>=0.24.0,<0.25.0
+
+# Audio Processing
+pydub==0.25.1
+
+# Utilities
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# PDF Generation (for future)
+# weasyprint==60.0
+
+# Development
+pytest==7.4.3
+pytest-asyncio==0.21.1
+black==23.11.0
+flake8==6.1.0
+
