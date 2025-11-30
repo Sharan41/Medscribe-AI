@@ -1,9 +1,8 @@
 """
 Transcription Service
-Handles audio transcription using Reverie API with speaker diarization
+Handles audio transcription using AssemblyAI (primary) or Reverie API (fallback)
 """
 
-from reverie_sdk import ReverieClient
 from app.config import settings
 from app.services.audio_converter import audio_converter
 import logging
@@ -13,24 +12,39 @@ import tempfile
 
 logger = logging.getLogger(__name__)
 
-# Try to import AssemblyAI (optional)
+# Try to import AssemblyAI (primary service)
 try:
     from app.services.assemblyai_service import assemblyai_service
     ASSEMBLYAI_AVAILABLE = True
 except ImportError:
     ASSEMBLYAI_AVAILABLE = False
-    logger.warning("AssemblyAI not available, using Reverie only")
+    logger.warning("AssemblyAI not available")
+
+# Try to import Reverie SDK (optional, requires Python <3.13)
+try:
+    from reverie_sdk import ReverieClient
+    REVERIE_AVAILABLE = True
+except ImportError:
+    REVERIE_AVAILABLE = False
+    logger.info("Reverie SDK not available (requires Python <3.13). Using AssemblyAI as primary service.")
+    ReverieClient = None
 
 class TranscriptionService:
-    """Service for transcribing audio files using Reverie API"""
+    """Service for transcribing audio files using AssemblyAI (primary) or Reverie API (fallback)"""
     
     def __init__(self):
-        """Initialize Reverie client"""
-        self.client = ReverieClient(
-            api_key=settings.REVERIE_API_KEY,
-            app_id=settings.REVERIE_APP_ID,
-            verbose=False
-        )
+        """Initialize transcription clients"""
+        self.reverie_client = None
+        if REVERIE_AVAILABLE and ReverieClient:
+            try:
+                self.reverie_client = ReverieClient(
+                    api_key=settings.REVERIE_API_KEY,
+                    app_id=settings.REVERIE_APP_ID,
+                    verbose=False
+                )
+            except Exception as e:
+                logger.warning(f"Failed to initialize Reverie client: {e}")
+                self.reverie_client = None
     
     async def transcribe_audio(
         self,
@@ -53,11 +67,22 @@ class TranscriptionService:
         Returns:
             Dictionary with transcription results
         """
-        # Use AssemblyAI if requested and available
-        if use_assemblyai and ASSEMBLYAI_AVAILABLE and enable_diarization:
-            return await self._transcribe_with_assemblyai(audio_data, language, audio_format)
+        # Use AssemblyAI if requested and available (or if Reverie not available)
+        if (use_assemblyai or not REVERIE_AVAILABLE or not self.reverie_client) and ASSEMBLYAI_AVAILABLE:
+            if enable_diarization:
+                return await self._transcribe_with_assemblyai(audio_data, language, audio_format)
+            else:
+                # AssemblyAI without diarization
+                return await self._transcribe_with_assemblyai(audio_data, language, audio_format)
         
-        # Default to Reverie
+        # Fallback to Reverie (only if available and not using AssemblyAI)
+        if not REVERIE_AVAILABLE or not self.reverie_client:
+            if ASSEMBLYAI_AVAILABLE:
+                logger.info("Reverie not available, using AssemblyAI")
+                return await self._transcribe_with_assemblyai(audio_data, language, audio_format)
+            else:
+                raise Exception("No transcription service available. Please configure AssemblyAI or Reverie.")
+        
         try:
             logger.info(f"Starting transcription (language: {language}, format: {audio_format})")
             
@@ -94,7 +119,10 @@ class TranscriptionService:
             # Call Reverie API
             # Note: speaker_diarization and punctuate may not be available in all SDK versions
             # Using minimal parameters that are definitely supported
-            result = self.client.asr.stt_file(
+            if not self.reverie_client:
+                raise Exception("Reverie client not initialized")
+            
+            result = self.reverie_client.asr.stt_file(
                 src_lang=src_lang,
                 data=audio_data,
                 format=reverie_format,
