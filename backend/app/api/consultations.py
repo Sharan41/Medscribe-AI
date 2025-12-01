@@ -45,7 +45,7 @@ def process_consultation_background(
     2. Generate SOAP note
     3. Update consultation record
     
-    Note: This runs in a background thread, so we use asyncio.run() for async operations
+    Note: This runs in a background thread, so we create a new event loop for async operations
     """
     logger.info(f"🚀 Background task started for consultation {consultation_id}")
     
@@ -155,22 +155,41 @@ def process_consultation_background(
             print(f"\n{'='*60}")
             print(f"❌ ERROR in background task for consultation {consultation_id}")
             print(f"Error: {error_msg}")
+            print(f"Error type: {type(e).__name__}")
             print(f"{'='*60}\n")
-            supabase = get_supabase_service()
-            # Note: error_message column doesn't exist in schema, using status only
-            supabase.table("consultations").update({
-                "status": "failed"
-            }).eq("id", consultation_id).execute()
+            try:
+                supabase = get_supabase_service()
+                # Note: error_message column doesn't exist in schema, using status only
+                supabase.table("consultations").update({
+                    "status": "failed"
+                }).eq("id", consultation_id).execute()
+            except Exception as update_error:
+                logger.error(f"Failed to update consultation status to failed: {update_error}")
             # Log error details for debugging
             logger.error(f"Error details: {error_msg}")
             raise
     
-    # Run async function in background thread
+    # Run async function in background thread with proper event loop handling
+    # This works better on Render than asyncio.run()
     try:
-        asyncio.run(_process())
-        logger.info(f"✅ Background task completed for consultation {consultation_id}")
+        # Create a new event loop for this thread (required for background tasks)
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(_process())
+            logger.info(f"✅ Background task completed for consultation {consultation_id}")
+        finally:
+            loop.close()
     except Exception as e:
         logger.error(f"❌ Background task exception for consultation {consultation_id}: {str(e)}", exc_info=True)
+        # Try to update status to failed even if event loop failed
+        try:
+            supabase = get_supabase_service()
+            supabase.table("consultations").update({
+                "status": "failed"
+            }).eq("id", consultation_id).execute()
+        except:
+            pass
         raise
 
 @router.post("", response_model=ConsultationResponse)
