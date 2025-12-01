@@ -351,7 +351,8 @@ async def get_consultation(
     Use this endpoint to poll for completion.
     Poll every 2 seconds until status is "completed" or "failed".
     """
-    supabase = get_supabase()
+    # Use service role to bypass RLS (we've already validated user via get_current_user)
+    supabase = get_supabase_service()
     
     try:
         consultation_response = supabase.table("consultations")\
@@ -381,6 +382,16 @@ async def get_consultation(
                 "cost": float(consultation.get("cost", 0)),
                 "created_at": consultation["created_at"],
                 "completed_at": consultation.get("completed_at")
+            }
+        elif consultation["status"] == "failed":
+            # Consultation processing failed
+            return {
+                "id": consultation["id"],
+                "status": consultation["status"],
+                "patient_name": consultation.get("patient_name"),
+                "language": consultation["language"],
+                "error_message": consultation.get("error_message"),
+                "created_at": consultation["created_at"]
             }
         else:
             # Still processing

@@ -1,0 +1,29 @@
+name: Keep Render Alive
+
+on:
+  schedule:
+    # Run every 10 minutes to keep Render instance awake
+    - cron: '*/10 * * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  ping-backend:
+    runs-on: ubuntu-latest
+    name: Ping Backend Service
+    steps:
+      - name: Ping Render Backend
+        run: |
+          echo "Pinging backend service..."
+          curl -f https://medscribe-backend-63pu.onrender.com/health || exit 1
+          echo "✅ Backend is awake!"
+
+  ping-frontend:
+    runs-on: ubuntu-latest
+    name: Ping Frontend Service
+    steps:
+      - name: Ping Render Frontend
+        run: |
+          echo "Pinging frontend service..."
+          curl -f https://medscribe-ai-frontend.onrender.com || echo "⚠️ Frontend ping failed (may be static site)"
+          echo "✅ Frontend check complete!"
+
