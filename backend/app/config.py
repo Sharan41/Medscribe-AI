@@ -23,8 +23,8 @@ class Settings(BaseSettings):
     REVERIE_API_KEY: str = os.getenv("REVERIE_API_KEY", "")
     REVERIE_APP_ID: str = os.getenv("REVERIE_APP_ID", "")
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
-    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "AIzaSyDU3Ov3xvJ3YNleiVskRB7nFTZE6HXnZpc")
-    ASSEMBLYAI_API_KEY: str = os.getenv("ASSEMBLYAI_API_KEY", "2a99f0e0efaf464c9f9a29950f1bccb8")
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    ASSEMBLYAI_API_KEY: str = os.getenv("ASSEMBLYAI_API_KEY", "")
     
     # CORS
     CORS_ORIGINS: str = os.getenv("CORS_ORIGINS", "http://localhost:3000")
