@@ -36,9 +36,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const register = async (email: string, password: string, name: string, clinic_name: string) => {
-    const response = await authService.register({ email, password, name, clinic_name });
+    await authService.register({ email, password, name, clinic_name });
     // Don't automatically log in after registration - user needs to log in manually
-    // setUser(response.user);
+    // User will be logged in after they manually log in via the login page
   };
 
   const logout = () => {
