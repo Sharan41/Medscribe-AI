@@ -29,8 +29,9 @@ pydub==0.25.1
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 
-# PDF Generation (for future)
-# weasyprint==60.0
+# PDF Generation
+reportlab>=4.0.0  # Fallback PDF generator (WeasyPrint requires system libraries)
+# weasyprint==60.0  # Commented: Requires system libraries (cairo, pango) not available on Render
 
 # Development
 pytest==7.4.3
