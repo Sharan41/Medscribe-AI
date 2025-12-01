@@ -25,7 +25,7 @@ services:
       - key: REVERIE_APP_ID
         sync: false
       - key: CORS_ORIGINS
-        sync: false
+        value: https://medscribe-ai-frontend.onrender.com,http://localhost:5173
 
 # Note: Static sites cannot be deployed via Render Blueprints
 # Deploy frontend manually: Dashboard → New → Static Site
