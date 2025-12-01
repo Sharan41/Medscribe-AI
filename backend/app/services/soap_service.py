@@ -188,7 +188,12 @@ Translate all medical terms, symptoms, and medications from {lang_name} to Engli
 **Instructions:**
 
 1. **Subjective:** Patient complaints with duration. Output ONLY in English.
-2. **Objective:** Vital signs (BP, pulse, temp), examination findings, observations. Output ONLY in English.
+2. **Objective:** Extract ALL objective findings from the transcript:
+   - Vital signs: BP, pulse, temperature, respiratory rate mentioned in conversation
+   - Physical examination findings: Any observations, test results, or clinical signs mentioned
+   - If NO objective findings are mentioned in the transcript, write: "No objective findings documented in consultation"
+   - DO NOT leave this section empty. Always provide a statement.
+   - Output ONLY in English.
 3. **Assessment:** Primary diagnosis using standard medical terminology. Auto-generate ICD-10 codes. Output ONLY in English.
 4. **Plan:** Medications with dosage, frequency (TID/BD/OD/SOS), duration. Output ONLY in English. Add follow-up instructions.
 
@@ -200,7 +205,7 @@ Keep each section concise but complete. Use bullet points in markdown format.
 {{
   "soap_note": "## Subjective\\n- Chief complaint with duration (English only)\\n\\n## Objective\\n- Vital signs and examination findings (English only)\\n\\n## Assessment\\n- Primary diagnosis (English only)\\n\\n## Plan\\n- Medication name with dosage, frequency, duration (English only)\\n- Follow-up instructions",
   "subjective": "Extracted subjective information in English",
-  "objective": "All objective findings including vitals and examination in English",
+  "objective": "All objective findings including vitals and examination in English. If none mentioned, state 'No objective findings documented in consultation'",
   "assessment": "Clinical assessment/diagnosis in English",
   "plan": "Complete treatment plan with medications and follow-up in English",
   "entities": {{

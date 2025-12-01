@@ -88,7 +88,7 @@ export default function Dashboard() {
                   {consultations.map((consultation) => (
                     <tr key={consultation.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {consultation.patient_name || 'N/A'}
+                        {consultation.patient_name || 'Not provided'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {consultation.language === 'ta' ? 'Tamil' : 'Telugu'}

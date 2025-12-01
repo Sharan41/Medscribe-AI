@@ -121,7 +121,7 @@ export default function ConsultationDetail() {
                 Consultation Details
               </h1>
               <p className="text-gray-600 mt-2">
-                Patient: {consultation.patient_name || 'N/A'} | Language:{' '}
+                Patient: {consultation.patient_name || 'Not provided'} | Language:{' '}
                 {consultation.language === 'ta' ? 'Tamil' : 'Telugu'}
               </p>
             </div>
