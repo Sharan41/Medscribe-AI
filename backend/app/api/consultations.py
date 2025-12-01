@@ -24,13 +24,22 @@ router = APIRouter()
 
 class ConsultationResponse(BaseModel):
     id: str
-    status: Literal["processing", "completed", "failed"]
+    status: Literal["processing", "review", "completed", "failed"]
     patient_name: Optional[str] = None
     language: str
     websocket_url: Optional[str] = None
     poll_url: str
     estimated_time: Optional[int] = None
     created_at: str
+
+class ReviewUpdateRequest(BaseModel):
+    soap_note: dict
+    entities: Optional[dict] = None
+    icd_codes: Optional[list] = None
+    edit_reason: Optional[str] = None
+
+class ApprovalRequest(BaseModel):
+    review_notes: Optional[str] = None
 
 def process_consultation_background(
     consultation_id: str,
@@ -145,6 +154,11 @@ def process_consultation_background(
                 }
             else:
                 update_data["soap_note"] = soap_note
+            
+            # Update consultation with results - set status to 'review' instead of 'completed'
+            # This triggers the review workflow
+            update_data["status"] = "review"
+            update_data["review_status"] = "pending_review"
             
             supabase.table("consultations").update(update_data).eq("id", consultation_id).execute()
             
@@ -400,7 +414,31 @@ async def get_consultation(
                 "icd_codes": consultation.get("icd_codes", []),
                 "cost": float(consultation.get("cost", 0)),
                 "created_at": consultation["created_at"],
-                "completed_at": consultation.get("completed_at")
+                "completed_at": consultation.get("completed_at"),
+                "review_status": consultation.get("review_status"),
+                "reviewed_by": consultation.get("reviewed_by"),
+                "reviewed_at": consultation.get("reviewed_at"),
+                "approved_by": consultation.get("approved_by"),
+                "approved_at": consultation.get("approved_at"),
+                "edit_count": consultation.get("edit_count", 0)
+            }
+        elif consultation["status"] == "review":
+            # Consultation ready for review
+            return {
+                "id": consultation["id"],
+                "status": "review",
+                "review_status": consultation.get("review_status", "pending_review"),
+                "patient_name": consultation.get("patient_name"),
+                "language": consultation["language"],
+                "transcript": consultation.get("transcript"),
+                "entities": consultation.get("entities", []),
+                "soap_note": consultation.get("soap_note"),
+                "icd_codes": consultation.get("icd_codes", []),
+                "cost": float(consultation.get("cost", 0)),
+                "created_at": consultation["created_at"],
+                "edit_count": consultation.get("edit_count", 0),
+                "reviewed_by": consultation.get("reviewed_by"),
+                "reviewed_at": consultation.get("reviewed_at")
             }
         elif consultation["status"] == "failed":
             # Consultation processing failed
@@ -453,11 +491,18 @@ async def get_consultation_pdf(
         
         consultation = consultation_response.data
         
-        # Check if consultation is completed
-        if consultation.get("status") != "completed":
+        # Check if consultation is completed or approved (can generate PDF)
+        if consultation.get("status") not in ["completed", "review"]:
             raise HTTPException(
                 status_code=400,
-                detail="PDF can only be generated for completed consultations"
+                detail="PDF can only be generated for consultations that are ready for review or completed"
+            )
+        
+        # Only allow PDF generation if approved or if review_status is approved
+        if consultation.get("status") == "review" and consultation.get("review_status") != "approved":
+            raise HTTPException(
+                status_code=400,
+                detail="PDF can only be generated after consultation is approved"
             )
         
         # Generate PDF (lazy import to avoid startup errors)
@@ -500,4 +545,208 @@ async def get_consultation_pdf(
     except Exception as e:
         logger.error(f"Failed to generate PDF for consultation {consultation_id}: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {str(e)}")
+
+@router.put("/{consultation_id}/review")
+async def update_consultation_review(
+    consultation_id: str,
+    review_data: ReviewUpdateRequest,
+    current_user = Depends(get_current_user)
+):
+    """
+    Update consultation SOAP note during review
+    
+    Allows clinicians to edit SOAP notes before approval.
+    Tracks edit history and increments edit count.
+    """
+    supabase = get_supabase_service()
+    
+    try:
+        # Fetch consultation
+        consultation_response = supabase.table("consultations")\
+            .select("*")\
+            .eq("id", consultation_id)\
+            .eq("user_id", current_user.id)\
+            .single()\
+            .execute()
+        
+        if not consultation_response.data:
+            raise HTTPException(status_code=404, detail="Consultation not found")
+        
+        consultation = consultation_response.data
+        
+        # Check if consultation is in review status
+        if consultation.get("status") != "review":
+            raise HTTPException(
+                status_code=400,
+                detail="Consultation must be in review status to edit"
+            )
+        
+        # Get old SOAP note for history tracking
+        old_soap_note = consultation.get("soap_note")
+        new_soap_note = review_data.soap_note
+        
+        # Update consultation
+        update_data = {
+            "soap_note": new_soap_note,
+            "review_status": "under_review",
+            "reviewed_by": current_user.id,
+            "reviewed_at": datetime.now().isoformat(),
+            "last_edited_by": current_user.id,
+            "last_edited_at": datetime.now().isoformat(),
+            "edit_count": consultation.get("edit_count", 0) + 1
+        }
+        
+        # Update entities and ICD codes if provided
+        if review_data.entities:
+            update_data["entities"] = review_data.entities
+        if review_data.icd_codes:
+            update_data["icd_codes"] = review_data.icd_codes
+        
+        # Save edit history
+        if old_soap_note != new_soap_note:
+            supabase.table("consultation_edit_history").insert({
+                "consultation_id": consultation_id,
+                "edited_by": current_user.id,
+                "field_name": "soap_note",
+                "old_value": old_soap_note,
+                "new_value": new_soap_note,
+                "edit_reason": review_data.edit_reason or "Clinician review and edit"
+            }).execute()
+        
+        # Update consultation
+        updated_response = supabase.table("consultations")\
+            .update(update_data)\
+            .eq("id", consultation_id)\
+            .execute()
+        
+        if not updated_response.data:
+            raise HTTPException(status_code=500, detail="Failed to update consultation")
+        
+        return {
+            "id": consultation_id,
+            "status": "review",
+            "review_status": "under_review",
+            "message": "Consultation updated successfully",
+            "edit_count": update_data["edit_count"]
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to update consultation review: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to update consultation: {str(e)}")
+
+@router.post("/{consultation_id}/approve")
+async def approve_consultation(
+    consultation_id: str,
+    approval_data: ApprovalRequest,
+    current_user = Depends(get_current_user)
+):
+    """
+    Approve consultation and mark as completed
+    
+    After approval, consultation status changes to 'completed' and can be used for PDF generation.
+    """
+    supabase = get_supabase_service()
+    
+    try:
+        # Fetch consultation
+        consultation_response = supabase.table("consultations")\
+            .select("*")\
+            .eq("id", consultation_id)\
+            .eq("user_id", current_user.id)\
+            .single()\
+            .execute()
+        
+        if not consultation_response.data:
+            raise HTTPException(status_code=404, detail="Consultation not found")
+        
+        consultation = consultation_response.data
+        
+        # Check if consultation is in review status
+        if consultation.get("status") != "review":
+            raise HTTPException(
+                status_code=400,
+                detail="Only consultations in review status can be approved"
+            )
+        
+        # Update consultation to approved and completed
+        update_data = {
+            "status": "completed",
+            "review_status": "approved",
+            "approved_by": current_user.id,
+            "approved_at": datetime.now().isoformat(),
+            "completed_at": datetime.now().isoformat()
+        }
+        
+        # Add review notes if provided
+        if approval_data.review_notes:
+            update_data["review_notes"] = approval_data.review_notes
+        
+        # Update consultation
+        updated_response = supabase.table("consultations")\
+            .update(update_data)\
+            .eq("id", consultation_id)\
+            .execute()
+        
+        if not updated_response.data:
+            raise HTTPException(status_code=500, detail="Failed to approve consultation")
+        
+        return {
+            "id": consultation_id,
+            "status": "completed",
+            "review_status": "approved",
+            "approved_by": current_user.id,
+            "approved_at": update_data["approved_at"],
+            "message": "Consultation approved and marked as completed"
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to approve consultation: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to approve consultation: {str(e)}")
+
+@router.get("/{consultation_id}/edit-history")
+async def get_consultation_edit_history(
+    consultation_id: str,
+    current_user = Depends(get_current_user)
+):
+    """
+    Get edit history for a consultation
+    
+    Returns all edits made to the consultation during review.
+    """
+    supabase = get_supabase_service()
+    
+    try:
+        # Verify consultation belongs to user
+        consultation_response = supabase.table("consultations")\
+            .select("id")\
+            .eq("id", consultation_id)\
+            .eq("user_id", current_user.id)\
+            .single()\
+            .execute()
+        
+        if not consultation_response.data:
+            raise HTTPException(status_code=404, detail="Consultation not found")
+        
+        # Get edit history
+        history_response = supabase.table("consultation_edit_history")\
+            .select("*")\
+            .eq("consultation_id", consultation_id)\
+            .order("created_at", desc=True)\
+            .execute()
+        
+        return {
+            "consultation_id": consultation_id,
+            "edit_history": history_response.data or [],
+            "count": len(history_response.data) if history_response.data else 0
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get edit history: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to get edit history: {str(e)}")
 

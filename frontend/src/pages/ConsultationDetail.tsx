@@ -13,6 +13,10 @@ export default function ConsultationDetail() {
   const [consultation, setConsultation] = useState<Consultation | null>(null);
   const [loading, setLoading] = useState(true);
   const [, setPolling] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedSoapNote, setEditedSoapNote] = useState<any>(null);
+  const [editReason, setEditReason] = useState('');
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -40,6 +44,62 @@ export default function ConsultationDetail() {
     };
   }, [consultation?.status, id]);
 
+  // Initialize edit state when consultation loads
+  useEffect(() => {
+    if (consultation?.soap_note) {
+      setEditedSoapNote(consultation.soap_note);
+    }
+  }, [consultation?.soap_note]);
+
+  const handleEdit = () => {
+    setIsEditing(true);
+    setEditedSoapNote(consultation?.soap_note || null);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditedSoapNote(consultation?.soap_note || null);
+    setEditReason('');
+  };
+
+  const handleSaveEdit = async () => {
+    if (!id || !editedSoapNote) return;
+    
+    setSaving(true);
+    try {
+      await consultationsService.updateReview(id, {
+        soap_note: editedSoapNote,
+        entities: consultation?.entities,
+        icd_codes: consultation?.icd_codes,
+        edit_reason: editReason || 'Clinician review and edit'
+      });
+      
+      toast.success('Consultation updated successfully');
+      setIsEditing(false);
+      setEditReason('');
+      await loadConsultation();
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || 'Failed to update consultation');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleApprove = async () => {
+    if (!id) return;
+    
+    setSaving(true);
+    try {
+      await consultationsService.approveConsultation(id, editReason || undefined);
+      toast.success('Consultation approved and marked as completed');
+      await loadConsultation();
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || 'Failed to approve consultation');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const loadConsultation = async () => {
     if (!id) return;
     try {
@@ -50,10 +110,14 @@ export default function ConsultationDetail() {
       setLoading(false);
       
       // Show toast when status changes
-      if (previousStatus === 'processing' && data.status === 'completed') {
+      if (previousStatus === 'processing' && data.status === 'review') {
+        toast.success('Consultation ready for review!');
+      } else if (previousStatus === 'processing' && data.status === 'completed') {
         toast.success('Consultation processing completed!');
       } else if (previousStatus === 'processing' && data.status === 'failed') {
         toast.error('Consultation processing failed. Please try again.');
+      } else if (previousStatus === 'review' && data.status === 'completed') {
+        toast.success('Consultation approved and finalized!');
       }
     } catch (error: any) {
       console.error('Failed to load consultation:', error);
@@ -93,6 +157,8 @@ export default function ConsultationDetail() {
     switch (status) {
       case 'completed':
         return 'bg-green-100 text-green-800';
+      case 'review':
+        return 'bg-blue-100 text-blue-800';
       case 'processing':
         return 'bg-yellow-100 text-yellow-800';
       case 'failed':
@@ -152,9 +218,33 @@ export default function ConsultationDetail() {
               Processing... This may take 15-40 seconds.
             </div>
           )}
+
+          {consultation.status === 'review' && (
+            <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded mb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-semibold">Ready for Review</p>
+                  <p className="text-sm mt-1">
+                    Please review and approve the SOAP note before finalizing.
+                    {consultation.edit_count && consultation.edit_count > 0 && (
+                      <span className="ml-2">(Edited {consultation.edit_count} time{consultation.edit_count > 1 ? 's' : ''})</span>
+                    )}
+                  </p>
+                </div>
+                {!isEditing && (
+                  <button
+                    onClick={handleEdit}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  >
+                    Edit SOAP Note
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
-        {consultation.status === 'completed' && (
+        {(consultation.status === 'review' || consultation.status === 'completed') && (
           <>
             {/* Transcript */}
             {consultation.transcript && (
@@ -169,56 +259,116 @@ export default function ConsultationDetail() {
             {/* SOAP Note */}
             {consultation.soap_note && (
               <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h2 className="text-2xl font-bold mb-4">SOAP Note</h2>
-                {typeof consultation.soap_note === 'string' ? (
-                  <div
-                    className="prose max-w-none"
-                    dangerouslySetInnerHTML={{
-                      __html: consultation.soap_note.replace(/\n/g, '<br />'),
-                    }}
-                  />
-                ) : consultation.soap_note.markdown ? (
-                  <div
-                    className="prose max-w-none"
-                    dangerouslySetInnerHTML={{
-                      __html: consultation.soap_note.markdown.replace(/\n/g, '<br />'),
-                    }}
-                  />
-                ) : (
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-bold">SOAP Note</h2>
+                  {consultation.status === 'review' && consultation.review_status === 'approved' && (
+                    <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-semibold rounded-full">
+                      Approved
+                    </span>
+                  )}
+                </div>
+                
+                {isEditing ? (
                   <div className="space-y-4">
-                    {consultation.soap_note.subjective && (
-                      <div>
-                        <h3 className="font-bold text-lg">Subjective</h3>
-                        <p className="text-gray-700">
-                          {consultation.soap_note.subjective}
-                        </p>
-                      </div>
-                    )}
-                    {consultation.soap_note.objective && (
-                      <div>
-                        <h3 className="font-bold text-lg">Objective</h3>
-                        <p className="text-gray-700">
-                          {consultation.soap_note.objective}
-                        </p>
-                      </div>
-                    )}
-                    {consultation.soap_note.assessment && (
-                      <div>
-                        <h3 className="font-bold text-lg">Assessment</h3>
-                        <p className="text-gray-700">
-                          {consultation.soap_note.assessment}
-                        </p>
-                      </div>
-                    )}
-                    {consultation.soap_note.plan && (
-                      <div>
-                        <h3 className="font-bold text-lg">Plan</h3>
-                        <p className="text-gray-700">
-                          {consultation.soap_note.plan}
-                        </p>
-                      </div>
-                    )}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Edit SOAP Note
+                      </label>
+                      <textarea
+                        value={typeof editedSoapNote === 'string' ? editedSoapNote : (editedSoapNote?.markdown || JSON.stringify(editedSoapNote, null, 2))}
+                        onChange={(e) => {
+                          try {
+                            setEditedSoapNote(JSON.parse(e.target.value));
+                          } catch {
+                            setEditedSoapNote({ markdown: e.target.value });
+                          }
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        rows={20}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Edit Reason (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={editReason}
+                        onChange={(e) => setEditReason(e.target.value)}
+                        placeholder="Reason for editing..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={handleSaveEdit}
+                        disabled={saving}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        {saving ? 'Saving...' : 'Save Changes'}
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        disabled={saving}
+                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
+                ) : (
+                  <>
+                    {typeof consultation.soap_note === 'string' ? (
+                      <div
+                        className="prose max-w-none"
+                        dangerouslySetInnerHTML={{
+                          __html: consultation.soap_note.replace(/\n/g, '<br />'),
+                        }}
+                      />
+                    ) : consultation.soap_note.markdown ? (
+                      <div
+                        className="prose max-w-none"
+                        dangerouslySetInnerHTML={{
+                          __html: consultation.soap_note.markdown.replace(/\n/g, '<br />'),
+                        }}
+                      />
+                    ) : (
+                      <div className="space-y-4">
+                        {consultation.soap_note.subjective && (
+                          <div>
+                            <h3 className="font-bold text-lg">Subjective</h3>
+                            <p className="text-gray-700">
+                              {consultation.soap_note.subjective}
+                            </p>
+                          </div>
+                        )}
+                        {consultation.soap_note.objective && (
+                          <div>
+                            <h3 className="font-bold text-lg">Objective</h3>
+                            <p className="text-gray-700">
+                              {consultation.soap_note.objective}
+                            </p>
+                          </div>
+                        )}
+                        {consultation.soap_note.assessment && (
+                          <div>
+                            <h3 className="font-bold text-lg">Assessment</h3>
+                            <p className="text-gray-700">
+                              {consultation.soap_note.assessment}
+                            </p>
+                          </div>
+                        )}
+                        {consultation.soap_note.plan && (
+                          <div>
+                            <h3 className="font-bold text-lg">Plan</h3>
+                            <p className="text-gray-700">
+                              {consultation.soap_note.plan}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
@@ -263,40 +413,70 @@ export default function ConsultationDetail() {
             )}
 
             {/* Actions */}
-            <div className="bg-white rounded-lg shadow-md p-6 flex gap-4">
-              <button
-                onClick={async () => {
-                  try {
-                    toast.loading('Generating PDF...');
-                    const blob = await consultationsService.downloadPDF(consultation.id);
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `consultation_${consultation.patient_name || consultation.id}.pdf`;
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
-                    toast.dismiss();
-                    toast.success('PDF downloaded successfully!');
-                  } catch (error: any) {
-                    toast.dismiss();
-                    toast.error(error.response?.data?.detail || 'Failed to download PDF');
-                  }
-                }}
-                className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Download PDF
-              </button>
-              
-              {consultation.cost && (
-                <div className="flex items-center text-gray-600">
-                  <span className="font-medium">Processing Cost: ₹{consultation.cost.toFixed(2)}</span>
-                </div>
-              )}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex flex-wrap gap-4 items-center">
+                {consultation.status === 'review' && !isEditing && (
+                  <>
+                    <button
+                      onClick={handleApprove}
+                      disabled={saving}
+                      className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 flex items-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Approve & Finalize
+                    </button>
+                    {consultation.review_status === 'under_review' && (
+                      <span className="text-sm text-gray-600">
+                        Consultation has been edited and is ready for approval
+                      </span>
+                    )}
+                  </>
+                )}
+                
+                {consultation.status === 'completed' && (
+                  <button
+                    onClick={async () => {
+                      try {
+                        toast.loading('Generating PDF...');
+                        const blob = await consultationsService.downloadPDF(consultation.id);
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `consultation_${consultation.patient_name || consultation.id}.pdf`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                        toast.dismiss();
+                        toast.success('PDF downloaded successfully!');
+                      } catch (error: any) {
+                        toast.dismiss();
+                        toast.error(error.response?.data?.detail || 'Failed to download PDF');
+                      }
+                    }}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Download PDF
+                  </button>
+                )}
+                
+                {consultation.cost && (
+                  <div className="flex items-center text-gray-600">
+                    <span className="font-medium">Processing Cost: ₹{consultation.cost.toFixed(2)}</span>
+                  </div>
+                )}
+
+                {consultation.status === 'completed' && consultation.approved_by && (
+                  <div className="text-sm text-gray-600">
+                    Approved on {consultation.approved_at ? new Date(consultation.approved_at).toLocaleString() : 'N/A'}
+                  </div>
+                )}
+              </div>
             </div>
           </>
         )}

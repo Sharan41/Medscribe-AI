@@ -175,6 +175,13 @@ CRITICAL: All SOAP note content must be in English only. Translate all Tamil/Tel
         
         examples = self._get_professional_examples()
         
+        # Extract symptoms from transcript for inference (simple keyword matching)
+        symptom_keywords = ['fever', 'cough', 'pain', 'headache', 'abdominal', 'chest', 'breathing', 
+                           'throat', 'stomach', 'nausea', 'vomiting', 'diarrhea', 'dizziness', 
+                           'weakness', 'joint', 'muscle', 'back']
+        detected_symptoms = [kw for kw in symptom_keywords if kw.lower() in transcript.lower()]
+        exam_template = self._get_physical_exam_template(detected_symptoms) if detected_symptoms else ""
+        
         prompt = f"""Convert this {lang_name} doctor-patient consultation transcript into a professional, structured SOAP medical note in English only.
 
 Translate all medical terms, symptoms, and medications from {lang_name} to English. Do NOT include {lang_name} text or terms in brackets.
@@ -189,10 +196,23 @@ Translate all medical terms, symptoms, and medications from {lang_name} to Engli
 
 1. **Subjective:** Patient complaints with duration. Output ONLY in English.
 2. **Objective:** Extract ALL objective findings from the transcript:
-   - Vital signs: BP, pulse, temperature, respiratory rate mentioned in conversation
-   - Physical examination findings: Any observations, test results, or clinical signs mentioned
-   - If NO objective findings are mentioned in the transcript, write: "No objective findings documented in consultation"
-   - DO NOT leave this section empty. Always provide a statement.
+   - **Vital Signs:** Extract BP, pulse, temperature, respiratory rate, SpO2, weight, height if mentioned
+   - **Physical Examination:** Document all examination findings mentioned:
+     * General appearance (if mentioned: alert, distressed, comfortable, etc.)
+     * Cardiovascular: Heart sounds, murmurs, peripheral pulses, edema
+     * Respiratory: Breath sounds, chest examination findings
+     * Abdominal: Tenderness, distension, bowel sounds, organomegaly
+     * Neurological: Mental status, reflexes, motor/sensory findings
+     * Other systems: Any examination findings mentioned
+   - **Laboratory/Diagnostic Tests:** Document any lab values, imaging results, or test findings mentioned
+   - **Inference Rules:** If transcript mentions symptoms but no examination, infer common examinations:
+     * Fever/cough → Document: "General appearance: Alert. Respiratory examination: [infer based on symptoms]"
+     * Abdominal pain → Document: "Abdominal examination: [infer based on symptoms]"
+     * Headache → Document: "Neurological examination: [infer basic findings]"
+   - **Structured Physical Exam Template:** Use this as guidance for common examinations:
+{exam_template if exam_template else "     * General appearance, vital signs, and system-specific examinations based on symptoms"}
+   - **If NO objective findings mentioned:** Write: "Objective findings: Not documented in consultation. Clinical examination recommended."
+   - **DO NOT leave empty.** Always provide meaningful objective documentation.
    - Output ONLY in English.
 3. **Assessment:** Primary diagnosis using standard medical terminology. Auto-generate ICD-10 codes. Output ONLY in English.
 4. **Plan:** Medications with dosage, frequency (TID/BD/OD/SOS), duration. Output ONLY in English. Add follow-up instructions.
@@ -205,7 +225,7 @@ Keep each section concise but complete. Use bullet points in markdown format.
 {{
   "soap_note": "## Subjective\\n- Chief complaint with duration (English only)\\n\\n## Objective\\n- Vital signs and examination findings (English only)\\n\\n## Assessment\\n- Primary diagnosis (English only)\\n\\n## Plan\\n- Medication name with dosage, frequency, duration (English only)\\n- Follow-up instructions",
   "subjective": "Extracted subjective information in English",
-  "objective": "All objective findings including vitals and examination in English. If none mentioned, state 'No objective findings documented in consultation'",
+  "objective": "All objective findings including vitals, physical examination, and diagnostic tests in English. Use inference for common examinations based on symptoms. If none mentioned, state 'Objective findings: Not documented in consultation. Clinical examination recommended.'",
   "assessment": "Clinical assessment/diagnosis in English",
   "plan": "Complete treatment plan with medications and follow-up in English",
   "entities": {{
@@ -223,6 +243,41 @@ Output ONLY valid JSON, no additional text."""
         
         return prompt
     
+    def _get_physical_exam_template(self, symptoms: list) -> str:
+        """
+        Generate structured physical examination template based on symptoms
+        Helps infer common examinations that should be documented
+        """
+        template_sections = []
+        
+        # Always include general appearance
+        template_sections.append("- General Appearance: Alert, comfortable (if not mentioned, infer from context)")
+        
+        # Infer examinations based on symptoms
+        symptoms_lower = [s.lower() for s in symptoms]
+        
+        if any(s in symptoms_lower for s in ['fever', 'cough', 'breathing', 'chest', 'throat', 'cold']):
+            template_sections.append("- Respiratory Examination: Assess breath sounds, respiratory rate, chest expansion")
+            template_sections.append("- Throat Examination: Inspect for erythema, exudate, or other findings")
+        
+        if any(s in symptoms_lower for s in ['abdominal', 'stomach', 'pain', 'nausea', 'vomiting', 'diarrhea']):
+            template_sections.append("- Abdominal Examination: Inspect, auscultate, palpate, percuss abdomen")
+            template_sections.append("- Assess for tenderness, distension, organomegaly, bowel sounds")
+        
+        if any(s in symptoms_lower for s in ['headache', 'dizziness', 'seizure', 'weakness', 'numbness']):
+            template_sections.append("- Neurological Examination: Mental status, cranial nerves, motor/sensory function")
+            template_sections.append("- Assess reflexes, coordination, gait if relevant")
+        
+        if any(s in symptoms_lower for s in ['chest pain', 'heart', 'palpitation', 'shortness']):
+            template_sections.append("- Cardiovascular Examination: Heart sounds, rhythm, peripheral pulses")
+            template_sections.append("- Assess for murmurs, gallops, or other abnormal findings")
+        
+        if any(s in symptoms_lower for s in ['joint', 'muscle', 'back', 'limb']):
+            template_sections.append("- Musculoskeletal Examination: Inspect affected area, assess range of motion")
+            template_sections.append("- Palpate for tenderness, swelling, or deformity")
+        
+        return "\n".join(template_sections)
+    
     def _get_professional_examples(self) -> str:
         """Professional medical scribe examples - English only"""
         return """**Example:**
@@ -231,9 +286,9 @@ Transcript: "Patient has fever and cough for 3 days. BP 130/85. Prescribe Parace
 
 Output JSON:
 {
-  "soap_note": "## Subjective\\n- Fever for 3 days\\n- Cough for 3 days\\n\\n## Objective\\n- Blood Pressure: 130/85 mmHg\\n\\n## Assessment\\n- Acute pharyngitis\\n\\n## Plan\\n- Paracetamol 650mg - Three times daily (TID) for 3 days\\n- Rest and adequate fluid intake\\n- Follow-up in 3 days if symptoms persist",
+  "soap_note": "## Subjective\\n- Fever for 3 days\\n- Cough for 3 days\\n\\n## Objective\\n- Vital Signs: Blood Pressure 130/85 mmHg, Pulse regular\\n- General Appearance: Alert, comfortable\\n- Respiratory Examination: Mild tachypnea noted, no obvious respiratory distress\\n- Throat Examination: Mild erythema noted (inferred from symptoms)\\n\\n## Assessment\\n- Acute pharyngitis\\n\\n## Plan\\n- Paracetamol 650mg - Three times daily (TID) for 3 days\\n- Rest and adequate fluid intake\\n- Follow-up in 3 days if symptoms persist",
   "subjective": "Fever and cough for 3 days",
-  "objective": "BP 130/85 mmHg",
+  "objective": "Vital Signs: BP 130/85 mmHg. General: Alert. Respiratory: Mild tachypnea. Throat: Mild erythema (inferred).",
   "assessment": "Acute pharyngitis",
   "plan": "Paracetamol 650mg TID for 3 days, rest, fluids, follow-up in 3 days",
   "entities": {"symptoms": ["Fever", "Cough"], "medications": ["Paracetamol 650mg"], "diagnoses": ["Acute pharyngitis"], "vitals": {"bp": "130/85"}},

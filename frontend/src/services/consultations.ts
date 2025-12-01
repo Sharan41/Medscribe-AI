@@ -6,7 +6,7 @@ import api from './api';
 
 export interface Consultation {
   id: string;
-  status: 'processing' | 'completed' | 'failed';
+  status: 'processing' | 'review' | 'completed' | 'failed';
   patient_name?: string;
   language: string;
   transcript?: string;
@@ -21,6 +21,12 @@ export interface Consultation {
   cost?: number;
   created_at: string;
   completed_at?: string;
+  review_status?: 'pending_review' | 'under_review' | 'approved' | 'rejected';
+  reviewed_by?: string;
+  reviewed_at?: string;
+  approved_by?: string;
+  approved_at?: string;
+  edit_count?: number;
 }
 
 export interface CreateConsultationRequest {
@@ -75,6 +81,28 @@ export const consultationsService = {
       responseType: 'blob',
     });
     return response.data;
+  },
+
+  async updateReview(id: string, reviewData: {
+    soap_note: any;
+    entities?: any;
+    icd_codes?: string[];
+    edit_reason?: string;
+  }): Promise<Consultation> {
+    const response = await api.put<Consultation>(`/consultations/${id}/review`, reviewData);
+    return response.data;
+  },
+
+  async approveConsultation(id: string, reviewNotes?: string): Promise<Consultation> {
+    const response = await api.post<Consultation>(`/consultations/${id}/approve`, {
+      review_notes: reviewNotes
+    });
+    return response.data;
+  },
+
+  async getEditHistory(id: string): Promise<any[]> {
+    const response = await api.get<{edit_history: any[], count: number}>(`/consultations/${id}/edit-history`);
+    return response.data.edit_history || [];
   },
 };
 
