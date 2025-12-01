@@ -12,7 +12,7 @@ export default function ConsultationDetail() {
   const navigate = useNavigate();
   const [consultation, setConsultation] = useState<Consultation | null>(null);
   const [loading, setLoading] = useState(true);
-  const [polling, setPolling] = useState(false);
+  const [, setPolling] = useState(false);
 
   useEffect(() => {
     if (!id) return;

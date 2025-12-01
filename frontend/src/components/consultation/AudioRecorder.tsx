@@ -20,7 +20,7 @@ export default function AudioRecorder({ onRecordingComplete, maxDuration = 1800 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     // Check for microphone permission
@@ -83,7 +83,7 @@ export default function AudioRecorder({ onRecordingComplete, maxDuration = 1800 
           const newTime = prev + 1;
           if (newTime >= maxDuration) {
             stopRecording();
-            toast.info(`Maximum recording duration (${Math.floor(maxDuration / 60)} minutes) reached`);
+            toast(`Maximum recording duration (${Math.floor(maxDuration / 60)} minutes) reached`, { icon: 'ℹ️' });
           }
           return newTime;
         });
