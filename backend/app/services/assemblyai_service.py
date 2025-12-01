@@ -59,7 +59,6 @@ class AssemblyAIService:
             # Configure transcription with speaker diarization
             config = aai.TranscriptionConfig(
                 speaker_labels=True,  # Enable speaker diarization
-                speaker_diarization=True,
                 language_code=lang_code,
                 medical_model=True,  # Use medical model for better accuracy
                 auto_punctuation=True,
