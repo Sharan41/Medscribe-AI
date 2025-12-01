@@ -15,9 +15,21 @@ class AssemblyAIService:
     """Service for transcribing audio using AssemblyAI with speaker diarization"""
     
     def __init__(self):
-        """Initialize AssemblyAI client"""
+        """Initialize AssemblyAI client (lazy initialization)"""
+        self.transcriber = None
+        self._initialized = False
+    
+    def _ensure_initialized(self):
+        """Lazy initialization - only create transcriber when needed"""
+        if self._initialized:
+            return
+        
+        if not settings.ASSEMBLYAI_API_KEY:
+            raise ValueError("ASSEMBLYAI_API_KEY not set. Please set it in environment variables.")
+        
         aai.settings.api_key = settings.ASSEMBLYAI_API_KEY
         self.transcriber = aai.Transcriber()
+        self._initialized = True
     
     async def transcribe_with_diarization(
         self,
@@ -45,6 +57,9 @@ class AssemblyAIService:
                 "cost": float  # Estimated cost
             }
         """
+        # Lazy initialization - only create transcriber when needed
+        self._ensure_initialized()
+        
         try:
             logger.info(f"Starting AssemblyAI transcription (language: {language})")
             
@@ -184,6 +199,7 @@ class AssemblyAIService:
         
         return " ".join(doctor_sentences), " ".join(patient_sentences)
 
-# Global service instance
+# Global service instance (lazy initialization - won't fail if API key not set)
+# Will only initialize when actually used
 assemblyai_service = AssemblyAIService()
 
