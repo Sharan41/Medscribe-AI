@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -121,9 +121,9 @@ export default function Register() {
           </div>
 
           <div className="text-center">
-            <a href="/login" className="text-blue-600 hover:text-blue-800">
+            <Link to="/login" className="text-blue-600 hover:text-blue-800">
               Already have an account? Sign in
-            </a>
+            </Link>
           </div>
         </form>
       </div>

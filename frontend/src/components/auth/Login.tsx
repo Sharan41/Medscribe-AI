@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -89,9 +89,9 @@ export default function Login() {
           </div>
 
           <div className="text-center">
-            <a href="/register" className="text-blue-600 hover:text-blue-800">
+            <Link to="/register" className="text-blue-600 hover:text-blue-800">
               Don't have an account? Register
-            </a>
+            </Link>
           </div>
         </form>
       </div>
