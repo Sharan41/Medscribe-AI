@@ -63,6 +63,12 @@ export default function AudioRecorder({ onRecordingComplete, maxDuration = 1800 
       };
 
       mediaRecorder.onstop = () => {
+        // Clear timer immediately when recording stops
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
+        
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         setAudioBlob(audioBlob);
         onRecordingComplete(audioBlob);
@@ -71,19 +77,37 @@ export default function AudioRecorder({ onRecordingComplete, maxDuration = 1800 
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => track.stop());
         }
+        
+        // Ensure recording state is false
+        setIsRecording(false);
       };
 
+      // Reset state before starting
+      setAudioBlob(null);
+      setRecordingTime(0);
+      
       mediaRecorder.start();
       setIsRecording(true);
-      setRecordingTime(0);
 
+      // Clear any existing timer first
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      
       // Start timer
       timerRef.current = setInterval(() => {
         setRecordingTime((prev) => {
           const newTime = prev + 1;
           if (newTime >= maxDuration) {
+            // Clear timer before stopping
+            if (timerRef.current) {
+              clearInterval(timerRef.current);
+              timerRef.current = null;
+            }
             stopRecording();
             toast(`Maximum recording duration (${Math.floor(maxDuration / 60)} minutes) reached`, { icon: 'ℹ️' });
+            return prev; // Don't increment if we're stopping
           }
           return newTime;
         });
@@ -99,13 +123,17 @@ export default function AudioRecorder({ onRecordingComplete, maxDuration = 1800 
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      
+      // Clear timer first to prevent it from continuing
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
+      
+      // Stop the media recorder
+      mediaRecorderRef.current.stop();
+      
+      // Update state
+      setIsRecording(false);
 
       toast.success('Recording stopped');
     }
