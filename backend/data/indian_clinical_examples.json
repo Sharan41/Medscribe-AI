@@ -1,0 +1,584 @@
+{
+  "examples": [
+    {
+      "id": "example_001",
+      "condition_type": "respiratory",
+      "language": "ta",
+      "transcript": "நோயாளிக்கு மூன்று நாட்களாக காய்ச்சல் மற்றும் இருமல் உள்ளது. BP 130/85. மூக்கு அடைப்பு உள்ளது. பாராசிட்டமால் 650mg மூன்று முறை கொடுக்கவும்.",
+      "transcript_english": "Patient has fever and cough for 3 days. BP 130/85. Nasal congestion present. Prescribe Paracetamol 650mg three times daily.",
+      "soap_note": {
+        "subjective": "Fever for 3 days\nCough for 3 days\nNasal congestion",
+        "objective": "Vital Signs: BP 130/85 mmHg, Pulse 88/min, Temperature 38.2°C\nGeneral Appearance: Alert, comfortable\nRespiratory Examination: Mild tachypnea, no respiratory distress\nThroat Examination: Mild erythema\nNasal Examination: Bilateral nasal congestion",
+        "assessment": "Acute upper respiratory tract infection (URTI)",
+        "plan": "Paracetamol 650mg - Three times daily (TID) for 3 days\nSteam inhalation twice daily\nAdequate rest and fluid intake\nFollow-up in 3 days if symptoms persist"
+      },
+      "entities": {
+        "symptoms": [
+          "Fever",
+          "Cough",
+          "Nasal congestion"
+        ],
+        "medications": [
+          "Paracetamol 650mg TID"
+        ],
+        "diagnoses": [
+          "Acute URTI"
+        ],
+        "vitals": {
+          "bp": "130/85",
+          "pulse": "88",
+          "temp": "38.2"
+        }
+      },
+      "icd_codes": [
+        "J06.9"
+      ],
+      "source": "synthetic",
+      "validated": true,
+      "date": "2024-12-01"
+    },
+    {
+      "id": "example_002",
+      "condition_type": "gastrointestinal",
+      "language": "te",
+      "transcript": "రోగికి రెండు రోజులుగా కడుపు నొప్పి ఉంది. వాంతులు కూడా ఉన్నాయి. BP 120/80. ఎక్సామినేషన్ చేస్తే కడుపులో టెండర్నెస్ ఉంది.",
+      "transcript_english": "Patient has abdominal pain for 2 days. Vomiting also present. BP 120/80. On examination, tenderness in abdomen.",
+      "soap_note": {
+        "subjective": "Abdominal pain for 2 days\nVomiting\nLoss of appetite",
+        "objective": "Vital Signs: BP 120/80 mmHg, Pulse 76/min\nGeneral Appearance: Alert, mild discomfort\nAbdominal Examination: Tenderness in epigastric region, no guarding or rigidity\nBowel sounds: Normal\nNo organomegaly",
+        "assessment": "Acute gastritis",
+        "plan": "Pantoprazole 40mg - Once daily (OD) before breakfast for 7 days\nDomperidone 10mg - Three times daily (TID) before meals for 3 days\nAvoid spicy and oily foods\nFollow-up in 1 week"
+      },
+      "entities": {
+        "symptoms": [
+          "Abdominal pain",
+          "Vomiting",
+          "Loss of appetite"
+        ],
+        "medications": [
+          "Pantoprazole 40mg OD",
+          "Domperidone 10mg TID"
+        ],
+        "diagnoses": [
+          "Acute gastritis"
+        ],
+        "vitals": {
+          "bp": "120/80",
+          "pulse": "76"
+        }
+      },
+      "icd_codes": [
+        "K29.90"
+      ],
+      "source": "synthetic",
+      "validated": true,
+      "date": "2024-12-01"
+    },
+    {
+      "id": "example_003",
+      "condition_type": "cardiovascular",
+      "language": "ta",
+      "transcript": "நோயாளிக்கு இரண்டு வாரங்களாக மார்பு வலி உள்ளது. BP 150/95. ECG normal. ரமிப்ரில் 5mg ஒரு முறை கொடுக்கவும்.",
+      "transcript_english": "Patient has chest pain for 2 weeks. BP 150/95. ECG normal. Prescribe Ramipril 5mg once daily.",
+      "soap_note": {
+        "subjective": "Chest pain for 2 weeks\nMild shortness of breath on exertion",
+        "objective": "Vital Signs: BP 150/95 mmHg, Pulse 82/min, regular\nGeneral Appearance: Alert, comfortable\nCardiovascular Examination: Heart sounds normal, no murmurs\nPeripheral pulses: All palpable\nECG: Normal sinus rhythm, no acute changes",
+        "assessment": "Hypertension, controlled\nChest pain - likely musculoskeletal",
+        "plan": "Ramipril 5mg - Once daily (OD) in the morning\nLifestyle modifications: Low salt diet, regular exercise\nMonitor BP weekly\nFollow-up in 2 weeks"
+      },
+      "entities": {
+        "symptoms": [
+          "Chest pain",
+          "Shortness of breath"
+        ],
+        "medications": [
+          "Ramipril 5mg OD"
+        ],
+        "diagnoses": [
+          "Hypertension"
+        ],
+        "vitals": {
+          "bp": "150/95",
+          "pulse": "82"
+        }
+      },
+      "icd_codes": [
+        "I10"
+      ],
+      "source": "synthetic",
+      "validated": true,
+      "date": "2024-12-01"
+    },
+    {
+      "id": "example_004",
+      "condition_type": "neurological",
+      "language": "ta",
+      "transcript": "நோயாளிக்கு மூன்று நாட்களாக தலைவலி உள்ளது. BP 125/80. Neurological examination normal. Paracetamol 500mg SOS கொடுக்கவும்.",
+      "transcript_english": "Patient has headache for 3 days. BP 125/80. Neurological examination normal. Prescribe Paracetamol 500mg SOS.",
+      "soap_note": {
+        "subjective": "Headache for 3 days\nThrobbing type, worse in morning\nNo associated nausea or vomiting",
+        "objective": "Vital Signs: BP 125/80 mmHg, Pulse 72/min\nGeneral Appearance: Alert, oriented\nNeurological Examination: Cranial nerves intact\nMotor and sensory examination: Normal\nNo signs of meningeal irritation",
+        "assessment": "Tension headache",
+        "plan": "Paracetamol 500mg - As needed (SOS) for pain\nRest and stress management\nAvoid triggers\nFollow-up if symptoms persist or worsen"
+      },
+      "entities": {
+        "symptoms": [
+          "Headache"
+        ],
+        "medications": [
+          "Paracetamol 500mg SOS"
+        ],
+        "diagnoses": [
+          "Tension headache"
+        ],
+        "vitals": {
+          "bp": "125/80",
+          "pulse": "72"
+        }
+      },
+      "icd_codes": [
+        "G44.2"
+      ],
+      "source": "synthetic",
+      "validated": true,
+      "date": "2024-12-01"
+    },
+    {
+      "id": "example_005",
+      "condition_type": "endocrine",
+      "language": "te",
+      "transcript": "రోగికి మధుమేహం ఉంది. FBS 180. BP 140/90. మెట్ఫార్మిన్ 500mg రెండు సార్లు తీసుకోవాలి.",
+      "transcript_english": "Patient has diabetes. FBS 180. BP 140/90. Metformin 500mg twice daily.",
+      "soap_note": {
+        "subjective": "Known case of Type 2 Diabetes Mellitus\nRegular follow-up\nNo current complaints",
+        "objective": "Vital Signs: BP 140/90 mmHg, Pulse 78/min\nGeneral Appearance: Alert, comfortable\nSystemic Examination: Within normal limits\nLaboratory: Fasting Blood Sugar 180 mg/dL",
+        "assessment": "Type 2 Diabetes Mellitus, uncontrolled\nHypertension",
+        "plan": "Metformin 500mg - Twice daily (BD) after meals\nAmlodipine 5mg - Once daily (OD) for hypertension\nDietary modifications: Low carbohydrate diet\nRegular exercise\nMonitor blood sugar and BP\nFollow-up in 1 month"
+      },
+      "entities": {
+        "symptoms": [],
+        "medications": [
+          "Metformin 500mg BD",
+          "Amlodipine 5mg OD"
+        ],
+        "diagnoses": [
+          "Type 2 Diabetes Mellitus",
+          "Hypertension"
+        ],
+        "vitals": {
+          "bp": "140/90",
+          "pulse": "78",
+          "fbs": "180"
+        }
+      },
+      "icd_codes": [
+        "E11.9",
+        "I10"
+      ],
+      "source": "synthetic",
+      "validated": true,
+      "date": "2024-12-01"
+    },
+    {
+      "id": "synth_5",
+      "condition_type": "general",
+      "language": "en",
+      "transcript": "not having adequate rest. Okay okay. So that continues for better part of the day. Hmm, hmm, hmm. Then",
+      "transcript_english": "not having adequate rest. Okay okay. So that continues for better part of the day. Hmm, hmm, hmm. Then",
+      "soap_note": {
+        "subjective": "Patient reports not having adequate rest throughout the day. Duration of this issue is not explicitly stated in the provided transcript.",
+        "objective": "Due to limited information, objective findings are inferred. General physical examination likely unremarkable. Vital signs (temperature, pulse rate, respiratory rate, blood pressure) undocumented. Further examination required to assess for underlying causes of inadequate rest.",
+        "assessment": "R68.89 - Other specified general symptoms and signs: Insomnia, unspecified. Further evaluation needed to rule out underlying medical or psychological conditions contributing to the patient's lack of adequate rest.",
+        "plan": "Advised on sleep hygiene techniques, including maintaining a regular sleep schedule, creating a relaxing bedtime routine, and optimizing the sleep environment. Consider further investigation if symptoms persist. Follow-up appointment scheduled in 2 weeks to assess response to sleep hygiene measures and determine the need for further evaluation or intervention. No medications prescribed at this time."
+      },
+      "entities": {
+        "symptoms": [
+          "inadequate rest"
+        ],
+        "medications": [],
+        "diagnoses": [
+          "Insomnia, unspecified"
+        ],
+        "vitals": {}
+      },
+      "icd_codes": [
+        "R68.89"
+      ],
+      "source": "synthetic",
+      "validated": false,
+      "date": "2025-12-02T13:20:05.636385"
+    },
+    {
+      "id": "synth_6",
+      "condition_type": "general",
+      "language": "en",
+      "transcript": "2 times in a day, please have, an antibiotic named azithromycin.",
+      "transcript_english": "2 times in a day, please have, an antibiotic named azithromycin.",
+      "soap_note": {
+        "subjective": "Patient presents with unspecified complaints requiring antibiotic treatment. Duration of symptoms is not mentioned.",
+        "objective": "No vital signs or physical examination findings documented. Assuming a basic examination was performed, but results are unavailable. Further examination is needed to determine the cause of the symptoms.",
+        "assessment": "Unspecified bacterial infection, site unspecified. (ICD-10: A49.9)",
+        "plan": "1. Azithromycin: 500mg orally twice a day (BID) for 3 days. \n2. Follow-up: Schedule a follow-up appointment in 3 days to assess treatment response and adjust management as needed. If symptoms worsen before the follow-up, seek immediate medical attention."
+      },
+      "entities": {
+        "symptoms": [],
+        "medications": [
+          {
+            "name": "Azithromycin",
+            "dosage": "500mg",
+            "route": "orally",
+            "frequency": "BID",
+            "duration": "3 days"
+          }
+        ],
+        "diagnoses": [
+          "Unspecified bacterial infection, site unspecified"
+        ],
+        "vitals": {}
+      },
+      "icd_codes": [
+        "A49.9"
+      ],
+      "source": "synthetic",
+      "validated": false,
+      "date": "2025-12-02T13:20:08.454873"
+    },
+    {
+      "id": "synth_7",
+      "condition_type": "general",
+      "language": "en",
+      "transcript": "500 mg. Also, Because you're feeling weak. Take Zincovit once in a day.",
+      "transcript_english": "500 mg. Also, Because you're feeling weak. Take Zincovit once in a day.",
+      "soap_note": {
+        "subjective": "Patient reports feeling weak. Duration of weakness is not specified in the transcript.",
+        "objective": "Weakness reported. Physical examination findings are not available in the transcript. Assuming basic examination: General appearance: Appears weak. Further examination required to rule out underlying causes.",
+        "assessment": "R53.81 - Weakness",
+        "plan": "Medication: 500 mg (Drug name not specified in transcript, needs clarification). Dosage and frequency not specified, needs clarification. Zincovit: One tablet once a day (OD). Duration not specified, needs clarification. Follow-up: Schedule a follow-up appointment to assess response to treatment and investigate the underlying cause of weakness if symptoms persist."
+      },
+      "entities": {
+        "symptoms": [
+          "feeling weak"
+        ],
+        "medications": [
+          "500 mg",
+          "Zincovit"
+        ],
+        "diagnoses": [
+          "Weakness"
+        ],
+        "vitals": {}
+      },
+      "icd_codes": [
+        "R53.81"
+      ],
+      "source": "synthetic",
+      "validated": false,
+      "date": "2025-12-02T13:20:10.931577"
+    },
+    {
+      "id": "synth_8",
+      "condition_type": "respiratory",
+      "language": "en",
+      "transcript": "Patient has fever, headache, back pain, leg pain all over the body, I recommend to give Dolo 650 tablet thrice a day for 6 days, and I also want to give Pantop DSR for 7 days. Ask patient to come after 12 days and give thyroxine 25 mcg for 15 days.",
+      "transcript_english": "Patient has fever, headache, back pain, leg pain all over the body, I recommend to give Dolo 650 tablet thrice a day for 6 days, and I also want to give Pantop DSR for 7 days. Ask patient to come after 12 days and give thyroxine 25 mcg for 15 days.",
+      "soap_note": {
+        "subjective": "Patient presents with fever, headache, back pain, and leg pain all over the body. Duration of symptoms is not specified.",
+        "objective": "T: (Documented as fever present in subjective) \nGeneral: Patient appears unwell.\nHEENT: (Documented as headache present in subjective) Examination likely to reveal tenderness or normal findings.\nMusculoskeletal: (Documented as back pain and leg pain present in subjective) Examination likely to reveal tenderness or limited range of motion in affected areas. Neurological examination to rule out nerve involvement.",
+        "assessment": "Viral Fever, unspecified (ICD-10: B34.9)",
+        "plan": "1. Dolo 650 tablet 650mg, thrice a day (TID) for 6 days.\n2. Pantop DSR capsule, once a day (OD) for 7 days.\n3. Thyroxine 25 mcg tablet, once a day (OD) for 15 days, to be started after 12 days.\n4. Follow-up appointment in 12 days."
+      },
+      "entities": {
+        "symptoms": [
+          "fever",
+          "headache",
+          "back pain",
+          "leg pain"
+        ],
+        "medications": [
+          "Dolo 650",
+          "Pantop DSR",
+          "Thyroxine"
+        ],
+        "diagnoses": [
+          "Viral Fever"
+        ],
+        "vitals": {}
+      },
+      "icd_codes": [
+        "B34.9"
+      ],
+      "source": "synthetic",
+      "validated": false,
+      "date": "2025-12-02T13:20:13.866407"
+    },
+    {
+      "id": "synth_9",
+      "condition_type": "gastrointestinal",
+      "language": "en",
+      "transcript": "Gelusil tablet and many more drugs and see after 7 days.",
+      "transcript_english": "Gelusil tablet and many more drugs and see after 7 days.",
+      "soap_note": {
+        "subjective": "Patient presents with unspecified complaints. Duration of symptoms is not mentioned.",
+        "objective": "No vital signs or physical examination findings documented. Assuming basic examination: General appearance: Not documented. Abdomen: Not documented.",
+        "assessment": "Unspecified complaint, likely related to gastrointestinal issues given the prescription of Gelusil. R10.9 - Unspecified abdominal pain",
+        "plan": "Medication: Gelusil tablet, dosage and frequency not specified, duration 7 days. Follow-up: Review after 7 days."
+      },
+      "entities": {
+        "symptoms": [],
+        "medications": [
+          "Gelusil tablet"
+        ],
+        "diagnoses": [
+          "Unspecified abdominal pain"
+        ],
+        "vitals": {}
+      },
+      "icd_codes": [
+        "R10.9"
+      ],
+      "source": "synthetic",
+      "validated": false,
+      "date": "2025-12-02T13:20:16.038381"
+    },
+    {
+      "id": "synth_10",
+      "condition_type": "respiratory",
+      "language": "en",
+      "transcript": "Hello. The patient has fever, headache, body ache all over the body, and there's also so much happening. I recommend him to do antigen test. I'm suspecting dengue, and the patient should take dolo 650, the patient should take Pantop DSR 40.",
+      "transcript_english": "Hello. The patient has fever, headache, body ache all over the body, and there's also so much happening. I recommend him to do antigen test. I'm suspecting dengue, and the patient should take dolo 650, the patient should take Pantop DSR 40.",
+      "soap_note": {
+        "subjective": "Patient presents with fever, headache, and generalized body ache. Duration of symptoms not specified.",
+        "objective": "Vital signs: Not documented. Physical examination: General appearance - patient appears unwell. Further examination including temperature, pulse rate, respiratory rate, blood pressure, and systemic examination are required to rule out other possible causes.",
+        "assessment": "Suspected Dengue Fever (A90). Differential diagnoses include other viral infections.",
+        "plan": "1. Advised Antigen test for Dengue. \n2. Prescribed Dolo 650 (Paracetamol 650mg) SOS for fever and pain. \n3. Prescribed Pantop DSR 40 (Pantoprazole 40mg + Domperidone SR) OD for gastric protection. \n4. Advised to maintain hydration and rest. \n5. Follow-up: Review after antigen test results are available or if symptoms worsen."
+      },
+      "entities": {
+        "symptoms": [
+          "fever",
+          "headache",
+          "body ache"
+        ],
+        "medications": [
+          "Dolo 650",
+          "Pantop DSR 40"
+        ],
+        "diagnoses": [
+          "Dengue"
+        ],
+        "vitals": {}
+      },
+      "icd_codes": [
+        "A90"
+      ],
+      "source": "synthetic",
+      "validated": false,
+      "date": "2025-12-02T13:20:19.198564"
+    },
+    {
+      "id": "synth_11",
+      "condition_type": "gastrointestinal",
+      "language": "en",
+      "transcript": "And, I want to also give Pantop DSR 40. And then, give some Eno for 5 days and ask the patient to come and see me after 10 days.",
+      "transcript_english": "And, I want to also give Pantop DSR 40. And then, give some Eno for 5 days and ask the patient to come and see me after 10 days.",
+      "soap_note": {
+        "subjective": "Patient to follow up after 10 days as instructed.",
+        "objective": "No objective data provided in the transcript. Assuming a gastrointestinal complaint based on the prescribed medications, a basic abdominal examination would be relevant. Vital signs are not documented.",
+        "assessment": "Likely dyspepsia or GERD (Gastroesophageal Reflux Disease) based on the prescribed medications. Further investigation is required for definitive diagnosis.",
+        "plan": "1. Pantop DSR 40: Prescribe as directed. Dosage and frequency not specified in the transcript, assuming OD (once daily) before meal. Duration not specified, assuming 10 days until follow-up.\n2. Eno: Prescribe for symptomatic relief. Dosage and frequency not specified in the transcript, assuming SOS (as needed) for 5 days.\n3. Follow-up: Advise patient to return for review in 10 days."
+      },
+      "entities": {
+        "symptoms": [],
+        "medications": [
+          "Pantop DSR 40",
+          "Eno"
+        ],
+        "diagnoses": [
+          "Dyspepsia",
+          "GERD"
+        ],
+        "vitals": {}
+      },
+      "icd_codes": [
+        "K30",
+        "K21.9"
+      ],
+      "source": "synthetic",
+      "validated": false,
+      "date": "2025-12-02T13:20:21.846347"
+    },
+    {
+      "id": "synth_12",
+      "condition_type": "respiratory",
+      "language": "en",
+      "transcript": "Patient has headache, fever, depression, leg pain. I want to prescribe giving patient Dolo 650.",
+      "transcript_english": "Patient has headache, fever, depression, leg pain. I want to prescribe giving patient Dolo 650.",
+      "soap_note": {
+        "subjective": "Patient presents with headache, fever, depression, and leg pain. Duration of symptoms is not specified.",
+        "objective": "Vital signs and physical examination findings are not documented. Assuming basic examination: General appearance: Appears unwell. HEENT: Examination pending. Musculoskeletal: Examination pending, leg pain reported. Neurological: Examination pending, headache and depression reported.",
+        "assessment": "R51 Headache, R50.9 Fever, F32.9 Major depressive disorder, single episode, unspecified, M79.669 Leg pain, unspecified",
+        "plan": "Prescribe Dolo 650 (Paracetamol 650mg) one tablet three times a day (TID) as needed (SOS) for pain and fever. Follow up as needed or if symptoms worsen."
+      },
+      "entities": {
+        "symptoms": [
+          {
+            "name": "headache",
+            "type": "clinical_findings",
+            "indices": [
+              12,
+              20
+            ]
+          },
+          {
+            "name": "fever",
+            "type": "clinical_findings",
+            "indices": [
+              22,
+              27
+            ]
+          },
+          {
+            "name": "depression",
+            "type": "clinical_findings",
+            "indices": [
+              29,
+              39
+            ]
+          },
+          {
+            "name": "leg pain",
+            "type": "clinical_findings",
+            "indices": [
+              41,
+              49
+            ]
+          }
+        ],
+        "medications": [
+          {
+            "name": "Dolo 650",
+            "type": "drugs",
+            "indices": [
+              86,
+              94
+            ]
+          }
+        ],
+        "diagnoses": [
+          {
+            "name": "Headache",
+            "code": "R51"
+          },
+          {
+            "name": "Fever",
+            "code": "R50.9"
+          },
+          {
+            "name": "Major depressive disorder",
+            "code": "F32.9"
+          },
+          {
+            "name": "Leg pain",
+            "code": "M79.669"
+          }
+        ],
+        "vitals": {}
+      },
+      "icd_codes": [
+        "R51",
+        "R50.9",
+        "F32.9",
+        "M79.669"
+      ],
+      "source": "synthetic",
+      "validated": false,
+      "date": "2025-12-02T13:20:26.176362"
+    },
+    {
+      "id": "synth_13",
+      "condition_type": "endocrine",
+      "language": "en",
+      "transcript": "For the medicine, take thyroxine. Also take Dolo 650. Avoid eating outside food, take proper bed rest and, go for morning walks regularly. Next follow-up is scheduled within a week.",
+      "transcript_english": "For the medicine, take thyroxine. Also take Dolo 650. Avoid eating outside food, take proper bed rest and, go for morning walks regularly. Next follow-up is scheduled within a week.",
+      "soap_note": {
+        "subjective": "Patient advised on medication and lifestyle modifications. No specific complaints or duration mentioned in the transcript.",
+        "objective": "No vital signs or physical examination findings documented in the transcript. Assuming a general check-up, common examinations would include: General appearance, Blood Pressure, Pulse Rate, Respiratory Rate, Temperature. Further details are unavailable.",
+        "assessment": "Based on the provided information (thyroxine prescription), a possible primary diagnosis is Hypothyroidism. However, without further information, this is presumptive. R/O other conditions.",
+        "plan": "Medications:\n* Thyroxine: Dosage and frequency not specified. Prescribe as per standard guidelines and patient's individual needs. Duration not specified.\n* Dolo 650: Dosage and frequency not specified. Prescribe as needed (SOS) for pain or fever. Duration not specified.\n\nLifestyle Modifications:\n* Avoid eating outside food.\n* Take proper bed rest.\n* Go for morning walks regularly.\n\nFollow-up: Schedule follow-up within one week for assessment of treatment response and further management."
+      },
+      "entities": {
+        "symptoms": [],
+        "medications": [
+          "Thyroxine",
+          "Dolo 650"
+        ],
+        "diagnoses": [
+          "Hypothyroidism"
+        ],
+        "vitals": {}
+      },
+      "icd_codes": [
+        "E03.9"
+      ],
+      "source": "synthetic",
+      "validated": false,
+      "date": "2025-12-02T13:20:29.109700"
+    },
+    {
+      "id": "synth_14",
+      "condition_type": "general",
+      "language": "en",
+      "transcript": "plus,there was this issue of,stomach ache, and,yeah, so we want to give him digene because I don't think it's a problem, it's a big problem.",
+      "transcript_english": "plus,there was this issue of,stomach ache, and,yeah, so we want to give him digene because I don't think it's a problem, it's a big problem.",
+      "soap_note": {
+        "subjective": "Patient reports experiencing stomach ache. Duration not specified.",
+        "objective": "Vital signs not documented. Physical examination: Abdomen - Examination not documented, assuming abdominal palpation would be performed to assess for tenderness, guarding, or rebound tenderness.",
+        "assessment": "Dyspepsia, unspecified (K30)",
+        "plan": "Medication: Digene SOS for symptomatic relief of stomach ache. \nFollow-up: Advised to return if symptoms worsen or persist despite medication."
+      },
+      "entities": {
+        "symptoms": [
+          {
+            "entity": "stomach ache",
+            "type": "clinical_findings",
+            "start": 29,
+            "end": 41
+          }
+        ],
+        "medications": [
+          {
+            "entity": "digene",
+            "type": "drugs",
+            "start": 76,
+            "end": 82
+          }
+        ],
+        "diagnoses": [
+          {
+            "entity": "Dyspepsia, unspecified",
+            "type": "diagnosis"
+          }
+        ],
+        "vitals": {}
+      },
+      "icd_codes": [
+        "K30"
+      ],
+      "source": "synthetic",
+      "validated": false,
+      "date": "2025-12-02T13:20:32.817500"
+    }
+  ],
+  "categories": {
+    "respiratory": 4,
+    "gastrointestinal": 3,
+    "cardiovascular": 1,
+    "neurological": 1,
+    "endocrine": 2,
+    "general": 4
+  },
+  "metadata": {
+    "total_examples": 15,
+    "last_updated": "2025-12-02T13:20:32.817558",
+    "version": "1.0"
+  }
+}
