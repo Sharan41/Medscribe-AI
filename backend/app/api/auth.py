@@ -102,7 +102,13 @@ async def login(credentials: UserLogin):
     """
     Login and get JWT token
     """
-    supabase = get_supabase()
+    try:
+        supabase = get_supabase()
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Configuration error: {str(e)}. Please check SUPABASE_URL and SUPABASE_KEY environment variables."
+        )
     
     try:
         # Authenticate with Supabase
@@ -111,6 +117,21 @@ async def login(credentials: UserLogin):
             "password": credentials.password
         })
         
+        # Check for authentication errors from Supabase
+        if hasattr(auth_response, 'error') and auth_response.error:
+            error_msg = auth_response.error.message if hasattr(auth_response.error, 'message') else str(auth_response.error)
+            
+            # Handle specific Supabase errors
+            if "Invalid login credentials" in error_msg or "invalid" in error_msg.lower():
+                raise HTTPException(status_code=401, detail="Invalid email or password")
+            elif "email" in error_msg.lower() and "verify" in error_msg.lower():
+                raise HTTPException(
+                    status_code=403,
+                    detail="Email not verified. Please check your email and verify your account, or disable email verification in Supabase Dashboard → Authentication → Settings."
+                )
+            else:
+                raise HTTPException(status_code=401, detail=f"Authentication failed: {error_msg}")
+        
         if auth_response.user is None:
             raise HTTPException(status_code=401, detail="Invalid credentials")
         
@@ -118,7 +139,7 @@ async def login(credentials: UserLogin):
         if auth_response.user.email_confirmed_at is None:
             raise HTTPException(
                 status_code=403,
-                detail="Email not verified. Please check your email and verify your account, or disable email verification in Supabase settings for development."
+                detail="Email not verified. Please check your email and verify your account, or disable email verification in Supabase Dashboard → Authentication → Settings."
             )
         
         # Get user profile (handle case where profile doesn't exist yet)
@@ -148,12 +169,24 @@ async def login(credentials: UserLogin):
         raise
     except Exception as e:
         error_msg = str(e)
-        if "email" in error_msg.lower() or "verify" in error_msg.lower():
+        # Log the full error for debugging
+        print(f"Login error: {error_msg}")
+        
+        # Handle specific error patterns
+        if "email" in error_msg.lower() and "verify" in error_msg.lower():
             raise HTTPException(
                 status_code=403,
                 detail="Email verification required. Please verify your email or disable email verification in Supabase Dashboard → Authentication → Settings."
             )
-        raise HTTPException(status_code=401, detail=f"Login failed: {error_msg}")
+        elif "invalid" in error_msg.lower() or "credentials" in error_msg.lower():
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        elif "connection" in error_msg.lower() or "network" in error_msg.lower():
+            raise HTTPException(
+                status_code=503,
+                detail="Unable to connect to authentication service. Please check your internet connection and try again."
+            )
+        else:
+            raise HTTPException(status_code=401, detail=f"Login failed: {error_msg}")
 
 @router.post("/refresh")
 async def refresh_token(refresh_token: str):

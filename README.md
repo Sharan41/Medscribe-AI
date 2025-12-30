@@ -7,8 +7,15 @@
 [![React](https://img.shields.io/badge/React-18+-61dafb.svg)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5+-3178c6.svg)](https://www.typescriptlang.org/)
 
+## 🌐 Live Demo
+
+**Frontend:** [https://medscribe-ai-frontend.onrender.com](https://medscribe-ai-frontend.onrender.com)
+
+**Example Consultation:** [View Sample Consultation](https://medscribe-ai-frontend.onrender.com/consultations/02d0b9f5-c417-42e2-b724-0a71e640a60c)
+
 ## 📋 Table of Contents
 
+- [Live Demo](#-live-demo)
 - [About](#about)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
@@ -476,6 +483,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [React](https://reactjs.org/) - For the UI framework
 
 ## 🚀 Deployment
+
+### Live Application
+
+**Frontend:** [https://medscribe-ai-frontend.onrender.com](https://medscribe-ai-frontend.onrender.com)
+
+**Example Consultation:** [View Sample Consultation](https://medscribe-ai-frontend.onrender.com/consultations/02d0b9f5-c417-42e2-b724-0a71e640a60c)
 
 ### Deploy to Render
 

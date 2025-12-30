@@ -173,9 +173,13 @@ def process_consultation_background(
             print(f"{'='*60}\n")
             try:
                 supabase = get_supabase_service()
-                # Note: error_message column doesn't exist in schema, using status only
+                # Store error message in a JSONB field or as part of progress
+                # Using progress field to store error details
                 supabase.table("consultations").update({
-                    "status": "failed"
+                    "status": "failed",
+                    "progress": {
+                        "error": error_msg[:500]  # Limit error message length
+                    }
                 }).eq("id", consultation_id).execute()
             except Exception as update_error:
                 logger.error(f"Failed to update consultation status to failed: {update_error}")
@@ -199,8 +203,12 @@ def process_consultation_background(
         # Try to update status to failed even if event loop failed
         try:
             supabase = get_supabase_service()
+            error_msg = str(e)
             supabase.table("consultations").update({
-                "status": "failed"
+                "status": "failed",
+                "progress": {
+                    "error": error_msg[:500]  # Limit error message length
+                }
             }).eq("id", consultation_id).execute()
         except:
             pass
@@ -442,12 +450,16 @@ async def get_consultation(
             }
         elif consultation["status"] == "failed":
             # Consultation processing failed
+            # Extract error message from progress field if available
+            progress = consultation.get("progress", {})
+            error_message = progress.get("error") if isinstance(progress, dict) else None
+            
             return {
                 "id": consultation["id"],
                 "status": consultation["status"],
                 "patient_name": consultation.get("patient_name"),
                 "language": consultation["language"],
-                "error_message": consultation.get("error_message"),
+                "error_message": error_message or consultation.get("error_message", "Processing failed. Please try again."),
                 "created_at": consultation["created_at"]
             }
         else:

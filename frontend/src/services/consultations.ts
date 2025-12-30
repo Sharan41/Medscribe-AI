@@ -27,6 +27,7 @@ export interface Consultation {
   approved_by?: string;
   approved_at?: string;
   edit_count?: number;
+  error_message?: string;
 }
 
 export interface CreateConsultationRequest {
